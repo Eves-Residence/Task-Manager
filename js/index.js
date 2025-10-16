@@ -57,8 +57,8 @@ const modalHTML = `
           border-radius:5px;
           resize:none;
           overflow:hidden;
-          min-height:50px;
-          max-height:500px;
+          min-height:100px;
+          max-height:300px;
           font-family:inherit;
           font-size:14px;
           line-height:1.4;
@@ -81,9 +81,9 @@ const cancelEditBtn = document.getElementById("cancelEditBtn");
 
 editNotes.addEventListener("input", () => {
   editNotes.style.height = "auto";
-  const newHeight = Math.min(editNotes.scrollHeight, 500);
+  const newHeight = Math.min(editNotes.scrollHeight, 300);
   editNotes.style.height = newHeight + "px";
-  editNotes.style.overflowY = editNotes.scrollHeight > 500 ? "auto" : "hidden";
+  editNotes.style.overflowY = editNotes.scrollHeight > 300 ? "auto" : "hidden";
 });
 
 // ✅ Add task
@@ -246,3 +246,14 @@ document.getElementById("statusFilter").addEventListener("change", renderTasks);
 
 // ✅ Auto-load
 window.addEventListener("load", fetchTasks);
+
+//additional codes
+//auto resize textarea's height
+
+const textareaHeight = document.getElementById("notes");
+textareaHeight.addEventListener("input", () => {
+  textareaHeight.style.height = "auto";
+  const newHeight = Math.min(textareaHeight.scrollHeight, 300);
+  textareaHeight.style.height = newHeight + "px";
+  textareaHeight.style.overflowY = textareaHeight.scrollHeight > 500 ? "auto" : "hidden";
+});
