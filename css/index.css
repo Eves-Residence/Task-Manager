@@ -1,26 +1,51 @@
 body {
-  font-family: Arial, sans-serif;
-  background: #f4f6f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f5f5f5;
   margin: 0;
-  padding: 20px;
+  font-family: Arial, sans-serif;
 }
 
+/* === MAIN CONTAINER === */
 .main-container {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
   justify-content: center;
+  align-items: flex-start;
+  gap: 30px;
+  width: 90%;
+  max-width: 1200px;
+  margin: 40px auto;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  padding: 30px;
 }
 
-.todo-form-container, .task-list-container {
+/* === FORM & TASK LIST === */
+.todo-form-container {
   background: #fff;
   border-radius: 10px;
   padding: 25px 30px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-  flex: 1 1 350px;
-  max-width: 500px;
+  width: 30%;
+  min-width: 280px;
+  flex-shrink: 0;
 }
 
+.task-list-container {
+  background: #fff;
+  border-radius: 10px;
+  padding: 25px 30px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* === TITLES & FORM ELEMENTS === */
 h1 {
   text-align: center;
   color: #333;
@@ -58,21 +83,30 @@ button:hover {
   font-weight: bold;
 }
 
-/* ✅ Task list styling */
+/* === TASK LIST (2-COLUMN GRID) === */
 .task-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 500px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  max-height: 600px;
   overflow-y: auto;
+  padding-right: 5px;
 }
 
+/* === TASK CARD === */
 .task-item {
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 20px;
   background: #fafafa;
   position: relative;
+  box-sizing: border-box;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.task-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .task-item.completed {
@@ -80,6 +114,7 @@ button:hover {
   text-decoration: line-through;
 }
 
+/* === TASK DETAILS === */
 .task-header {
   font-weight: bold;
   font-size: 16px;
@@ -97,12 +132,12 @@ button:hover {
   color: #555;
 }
 
-/* ✅ Priority colors */
+/* === PRIORITY COLORS === */
 .high { border-left: 6px solid #ff3b30; }
 .medium { border-left: 6px solid #ffcc00; }
 .low { border-left: 6px solid #34c759; }
 
-/* ✅ Buttons inside tasks */
+/* === BUTTONS INSIDE TASKS === */
 .task-actions {
   margin-top: 8px;
   display: flex;
@@ -121,10 +156,21 @@ button:hover {
 .edit-btn:hover { background: #ffcd00; }
 .delete-btn:hover { background: #ff2d55; }
 
-/* ✅ Responsive */
-@media (max-width: 768px) {
+/* === RESPONSIVE === */
+@media (max-width: 1024px) {
   .main-container {
     flex-direction: column;
     align-items: center;
+    width: 95%;
+    padding: 20px;
+  }
+
+  .todo-form-container,
+  .task-list-container {
+    width: 100%;
+  }
+
+  .task-list {
+    grid-template-columns: 1fr;
   }
 }
