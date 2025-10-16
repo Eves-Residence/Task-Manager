@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager Dashboard</title>
+  <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+  <div class="main-container">
+    <!-- ✅ Left: Form -->
+    <div class="todo-form-container">
+      <h1>📝 Task Manager</h1>
+      <form id="todo-form">
+        <label>Task Name</label>
+        <input type="text" id="taskName" required>
+
+        <label>Priority</label>
+        <select id="priority">
+          <option>High</option>
+          <option>Medium</option>
+          <option>Low</option>
+        </select>
+
+        <label>Assigned By</label>
+        <input type="text" id="assignedBy" required>
+
+        <label>Due Date</label>
+        <input type="date" id="dueDate" required>
+
+        <label>Notes</label>
+        <textarea id="notes" rows="3"></textarea>
+
+        <button type="submit">Save Task</button>
+      </form>
+      <p id="response" class="response"></p>
+    </div>
+
+    <!-- ✅ Right: Task List -->
+    <div class="task-list-container">
+      <h1>📋 Task List</h1>
+      <div id="taskList" class="task-list"></div>
+    </div>
+  </div>
+
+  <script src="js/index.js"></script>
+</body>
+</html>
