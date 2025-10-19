@@ -1,8 +1,9 @@
-const scriptURL = "https://script.google.com/macros/s/AKfycbwYerezYNrrXgKMdqZLI1owz_NBrtDBGkANX6HrQ1HsO5ngAQi7zARBM-0P-QJTeD2Vgg/exec";
+const scriptURL = "https://script.google.com/macros/s/AKfycbzgQJmOWTbUIVsTjKAZzrs0n439Bo_2PsPNrVQqIv-w-IMBRsQgAxV3wg8o7r0Sc7i6sA/exec";
 const form = document.getElementById("todo-form");
 const taskList = document.getElementById("taskList");
 const responseMsg = document.getElementById("response");
 
+// 🔹 Filter dropdown
 const filterContainer = document.createElement("div");
 filterContainer.innerHTML = `
   <label for="statusFilter"><b>Filter by Status:</b></label>
@@ -19,7 +20,7 @@ taskList.parentNode.insertBefore(filterContainer, taskList);
 let allTasks = [];
 let editIndex = null;
 
-// ✅ Modal HTML
+// 🔹 Modal HTML (Edit: Status + Add Remarks)
 const modalHTML = `
   <div id="modalOverlay" style="
     display:none;
@@ -49,8 +50,8 @@ const modalHTML = `
           <option value="Completed">Completed</option>
         </select>
 
-        <label for="editNotes">Notes:</label>
-        <textarea id="editNotes" style="
+        <label for="addRemarks">Add Remarks:</label>
+        <textarea id="addRemarks" placeholder="Add new remark..." style="
           width:100%;
           padding:8px;
           border:1px solid #ccc;
@@ -65,9 +66,9 @@ const modalHTML = `
           box-sizing:border-box;"></textarea>
       </div>
 
-      <div style="margin-top:15px;text-align:right;">
-        <button id="saveEditBtn" style="padding:6px 12px;background:#4CAF50;color:#fff;border:none;border-radius:5px;">Save</button>
-        <button id="cancelEditBtn" style="padding:6px 12px;background:#ccc;border:none;border-radius:5px;">Cancel</button>
+      <div style="margin-top:15px;display:flex;justify-content:flex-end;gap:10px;">
+        <button id="saveEditBtn" style="padding:10px 16px;background:#4CAF50;color:#fff;border:none;border-radius:5px;">Save</button>
+        <button id="cancelEditBtn" style="padding:10px 16px;background:#ccc;border:none;border-radius:5px;">Cancel</button>
       </div>
     </div>
   </div>`;
@@ -75,18 +76,19 @@ document.body.insertAdjacentHTML("beforeend", modalHTML);
 
 const modalOverlay = document.getElementById("modalOverlay");
 const editStatus = document.getElementById("editStatus");
-const editNotes = document.getElementById("editNotes");
+const addRemarks = document.getElementById("addRemarks");
 const saveEditBtn = document.getElementById("saveEditBtn");
 const cancelEditBtn = document.getElementById("cancelEditBtn");
 
-editNotes.addEventListener("input", () => {
-  editNotes.style.height = "auto";
-  const newHeight = Math.min(editNotes.scrollHeight, 300);
-  editNotes.style.height = newHeight + "px";
-  editNotes.style.overflowY = editNotes.scrollHeight > 300 ? "auto" : "hidden";
+// 🔹 Auto-resize textarea
+addRemarks.addEventListener("input", () => {
+  addRemarks.style.height = "auto";
+  const newHeight = Math.min(addRemarks.scrollHeight, 300);
+  addRemarks.style.height = newHeight + "px";
+  addRemarks.style.overflowY = addRemarks.scrollHeight > 300 ? "auto" : "hidden";
 });
 
-// ✅ Add task
+// 🔹 Add Task
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const task = {
@@ -118,7 +120,7 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-// ✅ Fetch tasks
+// 🔹 Fetch Tasks
 async function fetchTasks() {
   taskList.innerHTML = "<p>Loading tasks...</p>";
   try {
@@ -135,7 +137,7 @@ async function fetchTasks() {
   }
 }
 
-// ✅ Render tasks
+// 🔹 Render Tasks
 function renderTasks() {
   const selectedStatus = document.getElementById("statusFilter").value;
   let tasksToShow = allTasks;
@@ -176,41 +178,80 @@ function renderTasks() {
         <b>Due:</b> ${safe(t["DUE DATE"]) || "-"} |
         <b>Status:</b> <span style="color:${statusColor};font-weight:600;">${safe(status)}</span>
       </div>
-      ${t["NOTES"] ? `<div class="task-notes">🗒 ${safe(t["NOTES"])}</div>` : ""}
-      <div class="task-meta">🕒 ${safe(t["TIMESTAMP"]) || ""}</div>
+      ${t["NOTES"] ? `<div class="task-notes"><b>Notes:</b> ${safe(t["NOTES"])}</div>` : ""}
+      <div class="task-remarks-container">
+        ${t["REMARKS"] ? `<div class="task-remarks"><b>Remarks:</b> ${safe(t["REMARKS"]).replace(/\n/g, "<br>")}</div>` : ""}
+        ${t["FINISH DATE"] ? `<div class="task-finish"><b>Finish Date:</b> ${safe(formatDate(t["FINISH DATE"]))}</div>` : ""}
+      </div>
+      <div class="task-meta">${safe(formatDate(t["TIMESTAMP"])) || ""}</div>
       <div class="task-actions">
-        <button class="edit-btn" data-index="${index}">✏️ Edit</button>
+        ${status !== "Completed" ? `<button class="edit-btn" data-index="${index}">Edit</button>` : ""}
         <button class="delete-btn" data-index="${index}">🗑️ Delete</button>
       </div>
     `;
 
-    div.querySelector(".edit-btn").addEventListener("click", () => openEditModal(index));
+    if (status !== "Completed") {
+      div.querySelector(".edit-btn").addEventListener("click", () => openEditModal(index));
+    }
     div.querySelector(".delete-btn").addEventListener("click", () => deleteTask(index));
 
     taskList.appendChild(div);
   });
 }
 
-// ✅ Open edit modal
+// 🔹 Format date helper (convert to MM/DD/YYYY HH:mm:ss)
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  return d.toLocaleString("en-US", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+}
+
+// 🔹 Open Edit Modal
 function openEditModal(index) {
   editIndex = index;
   const t = allTasks[index];
   editStatus.value = t["STATUS"] || "Not Started";
-  editNotes.value = t["NOTES"] || "";
+  addRemarks.value = "";
   modalOverlay.style.display = "flex";
 }
 
-// ✅ Close modal
+// 🔹 Close Modal
 cancelEditBtn.addEventListener("click", () => (modalOverlay.style.display = "none"));
 
-// ✅ Save edit
+// 🔹 Save Edit (Add Remarks + Update Status)
 saveEditBtn.addEventListener("click", async () => {
   if (editIndex === null) return;
+
+  const remarkInput = addRemarks.value.trim();
+  const selectedStatus = editStatus.value;
+  const now = new Date();
+  const currentDate = now.toLocaleString("en-US", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false
+  });
+
   const updatedTask = {
     action: "update",
     rowIndex: editIndex,
-    status: editStatus.value,
-    notes: editNotes.value.trim(),
+    status: selectedStatus,
+    remarks: remarkInput,
+    finishDate: selectedStatus === "Completed" ? currentDate : (allTasks[editIndex]["FINISH DATE"] || ""),
   };
 
   try {
@@ -226,7 +267,7 @@ saveEditBtn.addEventListener("click", async () => {
   }
 });
 
-// ✅ Delete task
+// 🔹 Delete Task
 async function deleteTask(index) {
   if (!confirm("Are you sure you want to delete this task?")) return;
   try {
@@ -241,19 +282,9 @@ async function deleteTask(index) {
   }
 }
 
-// ✅ Filter
+// 🔹 Filter
 document.getElementById("statusFilter").addEventListener("change", renderTasks);
 
-// ✅ Auto-load
+// 🔹 Auto-load
 window.addEventListener("load", fetchTasks);
-
-//additional codes
-//auto resize textarea's height
-
-const textareaHeight = document.getElementById("notes");
-textareaHeight.addEventListener("input", () => {
-  textareaHeight.style.height = "auto";
-  const newHeight = Math.min(textareaHeight.scrollHeight, 300);
-  textareaHeight.style.height = newHeight + "px";
-  textareaHeight.style.overflowY = textareaHeight.scrollHeight > 500 ? "auto" : "hidden";
-});
+  
