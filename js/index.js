@@ -6,7 +6,7 @@ const responseMsg = document.getElementById("response");
 // 🔹 Filter container (Status + Priority)
 const filterContainer = document.createElement("div");
 filterContainer.innerHTML = `
-  <label for="statusFilter"><b>Filter by Status:</b></label>
+  <label for="statusFilter">Status</label>
   <select id="statusFilter">
     <option value="All">All</option>
     <option value="Not Started">Not Started</option>
@@ -16,7 +16,7 @@ filterContainer.innerHTML = `
 
   &nbsp;&nbsp;&nbsp;
 
-  <label for="priorityFilter"><b>Filter by Priority:</b></label>
+  <label for="priorityFilter">Priority</label>
   <select id="priorityFilter">
     <option value="All">All</option>
     <option value="High">High</option>
