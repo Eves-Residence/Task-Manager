@@ -25,11 +25,20 @@
         <label>Assigned By</label>
         <input type="text" id="assignedBy" required>
 
+        <label>Assigned To</label>
+        <select id="assignTo" required>
+          <option value="Self">Self</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Propperty Representative">Propperty Representative</option>
+          <option value="Accounting">Accounting</option>
+          <option value="IT">IT</option>
+        </select>
+
         <label>Due Date</label>
         <input type="date" id="dueDate" required>
 
         <label>Notes</label>
-        <textarea id="notes" style="
+        <textarea id="notes" rows="3" style="
           width:100%;
           padding:8px;
           border:1px solid #ccc;
