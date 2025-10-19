@@ -1,9 +1,9 @@
-const scriptURL = "https://script.google.com/macros/s/AKfycbzgQJmOWTbUIVsTjKAZzrs0n439Bo_2PsPNrVQqIv-w-IMBRsQgAxV3wg8o7r0Sc7i6sA/exec";
+const scriptURL = "https://script.google.com/macros/s/AKfycbz2kgIE_8d-H8nGkY8Jx4DjuGpsA-A98KBTikGXW98v8hA4k9K6VyxhvEQxPlHZjYa11A/exec";
 const form = document.getElementById("todo-form");
 const taskList = document.getElementById("taskList");
 const responseMsg = document.getElementById("response");
 
-// 🔹 Filter dropdown
+// 🔹 Filter container (Status + Priority)
 const filterContainer = document.createElement("div");
 filterContainer.innerHTML = `
   <label for="statusFilter"><b>Filter by Status:</b></label>
@@ -12,6 +12,16 @@ filterContainer.innerHTML = `
     <option value="Not Started">Not Started</option>
     <option value="In Progress">In Progress</option>
     <option value="Completed">Completed</option>
+  </select>
+
+  &nbsp;&nbsp;&nbsp;
+
+  <label for="priorityFilter"><b>Filter by Priority:</b></label>
+  <select id="priorityFilter">
+    <option value="All">All</option>
+    <option value="High">High</option>
+    <option value="Medium">Medium</option>
+    <option value="Low">Low</option>
   </select>
 `;
 filterContainer.style.marginBottom = "10px";
@@ -50,7 +60,7 @@ const modalHTML = `
           <option value="Completed">Completed</option>
         </select>
 
-        <label for="addRemarks">Add Remarks:</label>
+        <label for="addRemarks">Remarks:</label>
         <textarea id="addRemarks" placeholder="Add new remark..." style="
           width:100%;
           padding:8px;
@@ -96,6 +106,7 @@ form.addEventListener("submit", async (e) => {
     taskName: document.getElementById("taskName").value.trim(),
     priority: document.getElementById("priority").value,
     assignedBy: document.getElementById("assignedBy").value.trim(),
+    assignTo: document.getElementById("assignTo").value,
     dueDate: document.getElementById("dueDate").value,
     notes: document.getElementById("notes").value.trim(),
   };
@@ -137,12 +148,23 @@ async function fetchTasks() {
   }
 }
 
-// 🔹 Render Tasks
+// 🔹 Render Tasks (Status + Priority Filter)
 function renderTasks() {
   const selectedStatus = document.getElementById("statusFilter").value;
+  const selectedPriority = document.getElementById("priorityFilter").value;
+
   let tasksToShow = allTasks;
+
   if (selectedStatus !== "All") {
-    tasksToShow = allTasks.filter((t) => (t["STATUS"] || "Not Started") === selectedStatus);
+    tasksToShow = tasksToShow.filter(
+      (t) => (t["STATUS"] || "Not Started") === selectedStatus
+    );
+  }
+
+  if (selectedPriority !== "All") {
+    tasksToShow = tasksToShow.filter(
+      (t) => (t["PRIORITY"] || "").toLowerCase() === selectedPriority.toLowerCase()
+    );
   }
 
   taskList.innerHTML = "";
@@ -175,44 +197,29 @@ function renderTasks() {
       <div class="task-meta">
         <b>Priority:</b> ${safe(t["PRIORITY"])} |
         <b>Assigned By:</b> ${safe(t["ASSIGNED BY"]) || "-"} |
+        <b>Assigned To:</b> ${safe(t["ASSIGNED TO"]) || "-"} |
         <b>Due:</b> ${safe(t["DUE DATE"]) || "-"} |
         <b>Status:</b> <span style="color:${statusColor};font-weight:600;">${safe(status)}</span>
       </div>
       ${t["NOTES"] ? `<div class="task-notes"><b>Notes:</b> ${safe(t["NOTES"])}</div>` : ""}
+
       <div class="task-remarks-container">
-        ${t["REMARKS"] ? `<div class="task-remarks"><b>Remarks:</b> ${safe(t["REMARKS"]).replace(/\n/g, "<br>")}</div>` : ""}
-        ${t["FINISH DATE"] ? `<div class="task-finish"><b>Finish Date:</b> ${safe(formatDate(t["FINISH DATE"]))}</div>` : ""}
+        ${t["REMARKS"] ? `<div class="task-remarks">Remarks: ${safe(t["REMARKS"]).replace(/\n/g, "<br>")}</div>` : ""}
+        ${t["FINISH DATE"] ? `<div class="task-finish">Finish Date: ${safe(t["FINISH DATE"])}</div>` : ""}
       </div>
-      <div class="task-meta">${safe(formatDate(t["TIMESTAMP"])) || ""}</div>
+
+      <div class="task-meta">${safe(t["TIMESTAMP"]) || ""}</div>
       <div class="task-actions">
         ${status !== "Completed" ? `<button class="edit-btn" data-index="${index}">Edit</button>` : ""}
         <button class="delete-btn" data-index="${index}">🗑️ Delete</button>
       </div>
     `;
 
-    if (status !== "Completed") {
-      div.querySelector(".edit-btn").addEventListener("click", () => openEditModal(index));
-    }
+    const editBtn = div.querySelector(".edit-btn");
+    if (editBtn) editBtn.addEventListener("click", () => openEditModal(index));
     div.querySelector(".delete-btn").addEventListener("click", () => deleteTask(index));
 
     taskList.appendChild(div);
-  });
-}
-
-// 🔹 Format date helper (convert to MM/DD/YYYY HH:mm:ss)
-function formatDate(dateStr) {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  if (isNaN(d)) return dateStr;
-  return d.toLocaleString("en-US", {
-    timeZone: "Asia/Manila",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
   });
 }
 
@@ -228,7 +235,7 @@ function openEditModal(index) {
 // 🔹 Close Modal
 cancelEditBtn.addEventListener("click", () => (modalOverlay.style.display = "none"));
 
-// 🔹 Save Edit (Add Remarks + Update Status)
+// 🔹 Save Edit
 saveEditBtn.addEventListener("click", async () => {
   if (editIndex === null) return;
 
@@ -237,7 +244,7 @@ saveEditBtn.addEventListener("click", async () => {
   const now = new Date();
   const currentDate = now.toLocaleString("en-US", {
     timeZone: "Asia/Manila",
-    year: "numeric",
+    year: "2-digit",
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
@@ -282,9 +289,9 @@ async function deleteTask(index) {
   }
 }
 
-// 🔹 Filter
+// 🔹 Filters (Status + Priority)
 document.getElementById("statusFilter").addEventListener("change", renderTasks);
+document.getElementById("priorityFilter").addEventListener("change", renderTasks);
 
 // 🔹 Auto-load
 window.addEventListener("load", fetchTasks);
-  
